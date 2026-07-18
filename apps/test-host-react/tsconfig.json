@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "noCheck": true,
+    "rootDir": "src",
+    "outDir": "dist-types"
+  },
+  "references": [
+    { "path": "../../packages/recorder-free" },
+    { "path": "../../packages/recorder-react" }
+  ],
+  "include": ["src", "../../types"]
+}

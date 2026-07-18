@@ -1,0 +1,15 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "rootDir": "src",
+    "outDir": "dist"
+  },
+  "references": [
+    { "path": "../recorder-types" },
+    { "path": "../recorder-core" },
+    { "path": "../recorder-upload" },
+    { "path": "../recorder-ui" }
+  ],
+  "include": ["src"]
+}

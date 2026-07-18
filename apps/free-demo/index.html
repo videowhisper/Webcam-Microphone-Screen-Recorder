@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VideoWhisper Recorder Free Demo</title>
+    <script>
+      (function () {
+        var path = window.location.pathname.replace(/\/+$/, "");
+        var modePath = path.match(/^(.*)\/free\/(?:video|audio|screen|screen-microphone|photo|screenshot)$/);
+        var basePath = modePath ? modePath[1] : path;
+        basePath = basePath ? basePath + "/" : "/";
+        window.VW_RECORDER_DEMO_BASE_PATH = basePath.replace(/\/+/g, "/");
+        document.write('<base href="' + window.VW_RECORDER_DEMO_BASE_PATH + '">');
+      }());
+    </script>
+    <script src="./recorder-config.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./src/main.tsx"></script>
+  </body>
+</html>

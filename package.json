@@ -1,0 +1,49 @@
+{
+  "name": "videowhisper-recorder-development",
+  "private": true,
+  "version": "0.1.0",
+  "license": "GPL-2.0-or-later",
+  "type": "module",
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "dev": "vite --host 127.0.0.1 --port 5177",
+    "dev:local": "node tools/start-local-dev.mjs",
+    "test": "vitest run",
+    "test:unit": "vitest run",
+    "playwright:install:chromium": "PLAYWRIGHT_BROWSERS_PATH=${PLAYWRIGHT_BROWSERS_PATH:-$HOME/Library/Caches/ms-playwright} playwright install chromium",
+    "test:e2e": "PLAYWRIGHT_BROWSERS_PATH=${PLAYWRIGHT_BROWSERS_PATH:-$HOME/Library/Caches/ms-playwright} playwright test",
+    "test:all": "npm run typecheck && npm run test:unit && npm run build && npm run test:e2e",
+    "typecheck": "tsc -b",
+    "lint": "eslint .",
+    "postinstall": "node tools/repair-workspace-links.mjs || true",
+    "copy-design-assets": "node tools/copy-design-assets.mjs",
+    "sync:wp-recorder-assets": "node tools/sync-wp-recorder-assets.mjs",
+    "export:free": "node tools/export-free.mjs",
+    "package:demo": "node tools/build-release-package.mjs",
+    "prepare:github": "node tools/prepare-github-distribution.mjs"
+  },
+  "workspaces": [
+    "packages/*",
+    "apps/*"
+  ],
+  "dependencies": {
+    "@vitejs/plugin-react": "^5.0.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "typescript": "^5.8.3",
+    "vite": "^7.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.29.0",
+    "@playwright/test": "^1.57.0",
+    "@types/node": "^24.0.0",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0",
+    "eslint": "^9.29.0",
+    "globals": "^16.2.0",
+    "vitest": "^3.2.0"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

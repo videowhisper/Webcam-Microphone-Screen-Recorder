@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react-jsx",
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "baseUrl": ".",
+    "paths": {
+      "@videowhisper/recorder-types": ["packages/recorder-types/src/index.ts"],
+      "@videowhisper/recorder-core": ["packages/recorder-core/src/index.ts"],
+      "@videowhisper/recorder-upload": ["packages/recorder-upload/src/index.ts"],
+      "@videowhisper/recorder-ui": ["packages/recorder-ui/src/index.ts"],
+      "@videowhisper/recorder-ui/styles.css": ["packages/recorder-ui/src/styles.css"],
+      "@videowhisper/recorder-react": ["packages/recorder-react/src/index.ts"],
+      "@videowhisper/recorder-free": ["packages/recorder-free/src/index.ts"],
+      "@videowhisper/recorder-vanilla": ["packages/recorder-vanilla/src/index.ts"],
+      "@videowhisper/recorder-iframe": ["packages/recorder-iframe/src/index.ts"]
+    }
+  }
+}
