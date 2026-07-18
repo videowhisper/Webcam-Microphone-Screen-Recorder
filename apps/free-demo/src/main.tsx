@@ -97,6 +97,7 @@ function App() {
           </label>
           <a href={apiUrl("admin/media")} className="demo-link">PHP media browser</a>
           <a href="https://demo.videowhisper.com/webcam-microphone-screen-recorder/" className="demo-link" target="_blank" rel="noreferrer">Official Demo</a>
+          <a href="https://github.com/videowhisper/Webcam-Microphone-Screen-Recorder/" className="demo-link" target="_blank" rel="noreferrer">GitHub</a>
           <a href="https://consult.videowhisper.com/?department=Setup" className="demo-link" target="_blank" rel="noreferrer">Contact</a>
         </div>
       </header>
