@@ -1,3 +1,5 @@
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
@@ -6,7 +8,7 @@ export default defineConfig({
   // Relative asset URLs plus the runtime <base> injected in index.html let the
   // same build run at the domain root or from a demo subfolder.
   base: "./",
-  cacheDir: "/private/tmp/nosync-icloud/lms-video-suite-recorder-vite/free-demo",
+  cacheDir: join(tmpdir(), "videowhisper-recorder-vite", "free-demo"),
   server: {
     host: "127.0.0.1",
     port: 5177,

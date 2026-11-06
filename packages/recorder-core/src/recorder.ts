@@ -181,8 +181,21 @@ export class BrowserMediaRecorder implements RecorderApi {
       throw recorderError("invalid-state", "No recording is ready for acceptance.", true);
     }
 
-    this.transition("accepting");
     const draft = this.currentDraft;
+    const maxBytes = this.config.limits.maxBytes;
+    if (typeof maxBytes === "number" && Number.isFinite(maxBytes) && maxBytes > 0 && draft.sizeBytes > maxBytes) {
+      const error = recorderError(
+        "file-too-large",
+        "This recording is larger than the site upload limit. Discard it and record a shorter clip.",
+        true,
+        { maxBytes, sizeBytes: draft.sizeBytes }
+      );
+      this.config.callbacks?.onError?.(error);
+      this.bus.emit("error", error);
+      throw error;
+    }
+
+    this.transition("accepting");
 
     if (!this.config.upload.enabled) {
       const result = this.draftToResult(draft, "local");

@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { createRoot } from "react-dom/client";
 import type { RecorderMode } from "@videowhisper/recorder-types";
-import { createFreeRecorderConfig } from "@videowhisper/recorder-free";
+import { createRecorderConfig } from "@videowhisper/recorder-free";
 import { VideoWhisperRecorder } from "@videowhisper/recorder-react";
 import "@videowhisper/recorder-ui/styles.css";
 import "./styles.css";
@@ -38,7 +38,7 @@ function App() {
   const [localSave, setLocalSave] = useState(true);
   const config = useMemo(
     () =>
-      createFreeRecorderConfig({
+		createRecorderConfig({
         target: "#demo-recorder",
         mode,
         renderMode: "inline",

@@ -38,7 +38,6 @@ export function VideoWhisperRecorder({ config, uploadAdapter }: VideoWhisperReco
   const [isSurfaceOpen, setIsSurfaceOpen] = useState(config.renderMode === "inline" || config.renderMode === "container" || config.renderMode === "page");
   const [surfaceRevision, setSurfaceRevision] = useState(0);
   const [startedAt, setStartedAt] = useState<number | undefined>();
-  const freeDemoBadge = useMemo(createFreeDemoBadge, []);
 
   useEffect(() => {
     const offState = recorder.on("statechange", (payload) => {
@@ -212,7 +211,6 @@ export function VideoWhisperRecorder({ config, uploadAdapter }: VideoWhisperReco
       onDiscardAndRetry={() => runAction(discardAndRetry)}
       onAccept={() => runAction(acceptDraft)}
       onClose={() => runAction(closeSurface)}
-      freeDemoBadge={freeDemoBadge}
     />
   );
 
@@ -244,72 +242,6 @@ export function VideoWhisperRecorder({ config, uploadAdapter }: VideoWhisperReco
       ) : null}
     </div>
   );
-}
-
-interface FreeDemoBadgeData {
-  className: string;
-  id: string;
-  label: "Free" | "Demo";
-  side: "left" | "right";
-}
-
-function FreeDemoBadge({ badge }: { badge: FreeDemoBadgeData }) {
-  return (
-    <a
-      id={badge.id}
-      className={badge.className}
-      href="https://consult.videowhisper.com"
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Free demo by VideoWhisper. Open consultation site in a new tab."
-      style={{
-        position: "absolute",
-        bottom: "12px",
-        [badge.side]: "14px",
-        zIndex: 2147483647,
-        display: "inline-flex",
-        alignItems: "center",
-        minHeight: "30px",
-        padding: "6px 10px",
-        border: "1px solid rgba(255,255,255,.55)",
-        borderRadius: "999px",
-        background: "rgba(28,27,25,.92)",
-        boxShadow: "0 3px 14px rgba(0,0,0,.3)",
-        color: "#fff",
-        fontFamily: "system-ui,-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif",
-        fontSize: "12px",
-        fontWeight: 700,
-        letterSpacing: ".02em",
-        lineHeight: 1,
-        textDecoration: "none"
-      }}
-    >
-      {badge.label}
-    </a>
-  );
-}
-
-function createFreeDemoBadge(): FreeDemoBadgeData {
-  const storageKey = "vwr-free-demo-badge-v2";
-  try {
-    const stored = JSON.parse(window.sessionStorage.getItem(storageKey) ?? "null") as Partial<Pick<FreeDemoBadgeData, "label" | "side">> | null;
-    if ((stored?.side === "left" || stored?.side === "right") && (stored.label === "Free" || stored.label === "Demo")) {
-      return { className: randomBadgeName(), id: randomBadgeName(), side: stored.side, label: stored.label };
-    }
-    const side = Math.random() < 0.5 ? "left" : "right";
-    const label = Math.random() < 0.5 ? "Free" : "Demo";
-    window.sessionStorage.setItem(storageKey, JSON.stringify({ side, label }));
-    return { className: randomBadgeName(), id: randomBadgeName(), side, label };
-  } catch {
-    return { className: randomBadgeName(), id: randomBadgeName(), side: Math.random() < 0.5 ? "left" : "right", label: Math.random() < 0.5 ? "Free" : "Demo" };
-  }
-}
-
-function randomBadgeName(): string {
-  const random = typeof crypto !== "undefined" && "randomUUID" in crypto
-    ? crypto.randomUUID().replace(/-/g, "")
-    : Math.random().toString(36).slice(2) + Date.now().toString(36);
-  return `vw${random.slice(0, 18)}`;
 }
 
 function Launcher({
@@ -352,8 +284,7 @@ function RecorderSurface({
   onDiscard,
   onDiscardAndRetry,
   onAccept,
-  onClose,
-  freeDemoBadge
+  onClose
 }: {
   config: RecorderConfig;
   recorder: BrowserMediaRecorder;
@@ -373,7 +304,6 @@ function RecorderSurface({
   onDiscardAndRetry: () => void;
   onAccept: () => void;
   onClose: () => void;
-  freeDemoBadge: FreeDemoBadgeData;
 }) {
   const isPage = config.renderMode === "page";
   const isPreparing = state === "idle" || state === "closed" || state === "error";
@@ -383,7 +313,7 @@ function RecorderSurface({
       <header className="vwr-header">
         <div className="vwr-brand">
           <span className="vwr-mark" aria-hidden="true" />
-          <span className="vwr-title">VideoWhisper Recorder</span>
+          <span className="vwr-title">{config.ui.title ?? "VideoWhisper Recorder"}</span>
         </div>
         <button className="vwr-button vwr-button-secondary" type="button" onClick={onClose}>
           Close
@@ -412,7 +342,6 @@ function RecorderSurface({
             onCycleCamera={onCycleCamera}
             onCycleMicrophone={onCycleMicrophone}
             onCancel={onDiscard}
-            freeDemoBadge={freeDemoBadge}
           />
         ) : null}
         {draft && state === "review" ? (
@@ -447,16 +376,16 @@ function PermissionPrep({ config, onPrepare }: { config: RecorderConfig; onPrepa
 function captureDescription(config: RecorderConfig): string {
   switch (config.mode) {
     case "video":
-      return `Free limit: requests webcam video within a 640px long edge (typically 640 × 360 landscape or 360 × 640 portrait) at up to 30 fps for a maximum of ${formatDuration(config.limits.maxDurationSeconds)}. Your browser may adjust the final quality.`;
+      return "Webcam capture requests a 640px long edge (normally 640 × 360 landscape or 360 × 640 portrait) at up to 30 fps. Your browser may adjust the final quality.";
     case "screen":
     case "screen-microphone":
-      return `Free limit: requests up to 1280 × 720 screen video, with a maximum of ${formatDuration(config.limits.maxDurationSeconds)}. Your browser may retain the selected display's native resolution.`;
+      return "Screen capture requests up to 1280 × 720. Your browser may retain the selected display’s native resolution.";
     case "photo":
-      return "Free limit: webcam photos preserve their aspect ratio within a 1280px long edge. Your browser or camera may adjust the final quality.";
+      return "Webcam photos preserve their aspect ratio within a 1280px long edge. Your browser or camera may adjust the final quality.";
     case "screenshot":
-      return "Free limit: screen snapshots preserve their aspect ratio within a 1280px long edge. Your browser may retain the selected display's native resolution.";
+      return "Screen snapshots preserve their aspect ratio within a 1280px long edge. Your browser may retain the selected display’s native resolution.";
     case "audio":
-      return `Free limit: microphone recordings have a maximum length of ${formatDuration(config.limits.maxDurationSeconds)}.`;
+      return "Your browser and selected microphone determine the final audio quality.";
     default:
       return "Requested quality may be adjusted by your browser.";
   }
@@ -473,8 +402,7 @@ function CaptureView({
   onResume,
   onCycleCamera,
   onCycleMicrophone,
-  onCancel,
-  freeDemoBadge
+  onCancel
 }: {
   config: RecorderConfig;
   recorder: BrowserMediaRecorder;
@@ -487,7 +415,6 @@ function CaptureView({
   onCycleCamera: () => Promise<MediaDeviceInfo | undefined>;
   onCycleMicrophone: () => Promise<MediaDeviceInfo | undefined>;
   onCancel: () => void;
-  freeDemoBadge: FreeDemoBadgeData;
 }) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const elapsed = useElapsedSeconds(startedAt, state === "recording" || state === "paused");
@@ -575,7 +502,6 @@ function CaptureView({
       </div>
       {availability.warning ? <p className="vwr-capture-warning" role="status">{availability.warning}</p> : null}
       <div className="vwr-preview">
-        <FreeDemoBadge badge={freeDemoBadge} />
         {config.mode === "audio" ? (
           <div className="vwr-audio-panel">
             <div className="vwr-audio-bars" aria-hidden="true">
@@ -791,6 +717,11 @@ function ErrorView({ error, onRetry }: { error: RecorderError; onRetry: () => vo
   return (
     <div className="vwr-error">
       <strong>{error.message}</strong>
+      {error.code === "file-too-large" ? (
+        <p className="vwr-copy">
+          The captured file is {formatBytes(Number(error.details?.sizeBytes) || 0)} and the current site limit is {formatBytes(Number(error.details?.maxBytes) || 0)}. Discard and retry to record a shorter clip.
+        </p>
+      ) : null}
       {error.code === "permission-denied" ? (
         <p className="vwr-copy">Allow the requested camera, microphone, or screen permission in your browser, then try again. Webcam video can continue without audio when camera access is available.</p>
       ) : null}
@@ -798,7 +729,7 @@ function ErrorView({ error, onRetry }: { error: RecorderError; onRetry: () => vo
         <p className="vwr-copy">Check that the requested camera or microphone is connected and not in use by another application, then try again.</p>
       ) : null}
       <div className="vwr-actions" style={{ marginTop: 10 }}>
-        {error.recoverable ? (
+        {error.recoverable && error.code !== "file-too-large" ? (
           <button className="vwr-button vwr-button-secondary" type="button" onClick={onRetry}>
             Try again
           </button>
@@ -871,7 +802,7 @@ function useElapsedSeconds(startedAt: number | undefined, active: boolean): numb
 }
 
 function formatDuration(seconds: number): string {
-  const safe = Math.max(0, Math.round(seconds));
+  const safe = Number.isFinite(seconds) ? Math.max(0, Math.round(seconds)) : 0;
   const mins = Math.floor(safe / 60).toString();
   const secs = (safe % 60).toString().padStart(2, "0");
   return `${mins}:${secs}`;

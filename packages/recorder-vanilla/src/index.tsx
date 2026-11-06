@@ -1,7 +1,7 @@
 import React from "react";
 import { createRoot, type Root } from "react-dom/client";
 import type { RecorderApi, RecorderConfig, RecorderEventName, MediaResult } from "@videowhisper/recorder-types";
-import { createFreeRecorderConfig } from "@videowhisper/recorder-free";
+import { createRecorderConfig } from "@videowhisper/recorder-free";
 import { VideoWhisperRecorder } from "@videowhisper/recorder-react";
 import "@videowhisper/recorder-ui/styles.css";
 
@@ -13,7 +13,7 @@ const mounted = new WeakMap<HTMLElement, Root>();
 
 export function mount(config: Partial<RecorderConfig> & { target: string | HTMLElement }): MountedRecorder {
   const target = resolveTarget(config.target);
-  const finalConfig = createFreeRecorderConfig({ ...config, target });
+	const finalConfig = createRecorderConfig({ ...config, target });
   const callbacks = new Map<RecorderEventName, Set<(payload: unknown) => void>>();
   const results: MediaResult[] = [];
   const root = createRoot(target);
@@ -128,7 +128,7 @@ export function mount(config: Partial<RecorderConfig> & { target: string | HTMLE
   };
 }
 
-export { createFreeRecorderConfig, VideoWhisperRecorder };
+export { createRecorderConfig, VideoWhisperRecorder };
 
 function resolveTarget(target: string | HTMLElement): HTMLElement {
   if (typeof target !== "string") {
@@ -202,7 +202,7 @@ declare global {
   interface Window {
     VideoWhisperRecorder?: {
       mount: typeof mount;
-      createFreeRecorderConfig: typeof createFreeRecorderConfig;
+		createRecorderConfig: typeof createRecorderConfig;
     };
   }
 }
@@ -210,6 +210,6 @@ declare global {
 if (typeof window !== "undefined") {
   window.VideoWhisperRecorder = {
     mount,
-    createFreeRecorderConfig
+		createRecorderConfig
   };
 }

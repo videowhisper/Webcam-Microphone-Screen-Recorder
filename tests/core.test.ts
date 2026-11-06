@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { createFreeRecorderConfig } from "../packages/recorder-free/src";
+import { createRecorderConfig } from "../packages/recorder-free/src";
 import { BrowserMediaRecorder, detectCapabilities, fitCaptureDimensions, normalizeError, parseMediaCodecs, selectMimeType } from "../packages/recorder-core/src";
 import { MockUploadAdapter, ResumableUploadAdapter, SimpleMultipartUploadAdapter } from "../packages/recorder-upload/src";
 import type { RecorderDraft } from "../packages/recorder-types/src";
@@ -35,9 +35,9 @@ function draft(overrides: Partial<RecorderDraft> = {}): RecorderDraft {
   };
 }
 
-describe("free configuration", () => {
-  it("clamps Free duration and item limits", () => {
-    const config = createFreeRecorderConfig({
+describe("recorder configuration", () => {
+  it("preserves published Free ceilings against larger requests", () => {
+    const config = createRecorderConfig({
       limits: {
         maxDurationSeconds: 9999,
         maxItems: 99,
@@ -51,25 +51,25 @@ describe("free configuration", () => {
   });
 
   it("sets mode-specific launch labels and upload defaults", () => {
-    expect(createFreeRecorderConfig({ mode: "audio" }).ui.launchLabel).toBe("Add Audio");
-    expect(createFreeRecorderConfig({ mode: "photo" }).ui.launchLabel).toBe("Add Photo");
-    expect(createFreeRecorderConfig({ mode: "photo" }).capture.video).toMatchObject({
+    expect(createRecorderConfig({ mode: "audio" }).ui.launchLabel).toBe("Add Audio");
+    expect(createRecorderConfig({ mode: "photo" }).ui.launchLabel).toBe("Add Photo");
+    expect(createRecorderConfig({ mode: "photo" }).capture.video).toMatchObject({
       width: { ideal: 1280 },
       height: { ideal: 720 }
     });
-    expect(createFreeRecorderConfig({ mode: "video" }).capture.video).toMatchObject({
+    expect(createRecorderConfig({ mode: "video" }).capture.video).toMatchObject({
       width: { ideal: 640, max: 640 },
       height: { ideal: 360, max: 640 },
       aspectRatio: { ideal: 16 / 9 }
     });
-    expect(createFreeRecorderConfig({ mode: "screenshot" }).ui.launchLabel).toBe("Add Screenshot");
-    expect(createFreeRecorderConfig({ mode: "screenshot" }).capture.audio).toBe(false);
-    expect(createFreeRecorderConfig({ mode: "screen-microphone" }).ui.launchLabel).toBe("Add Screen Recording");
-    expect(createFreeRecorderConfig().upload.fieldName).toBe("media");
-    expect(createFreeRecorderConfig().completion.mode).toBe("return-to-host");
-    expect(createFreeRecorderConfig().capture.autoStart).toBe(false);
-    expect(createFreeRecorderConfig().capture.thumbnail).toMatchObject({ width: 1280, height: 1280 });
-    expect(createFreeRecorderConfig({ capture: { autoStart: true } }).capture.autoStart).toBe(true);
+    expect(createRecorderConfig({ mode: "screenshot" }).ui.launchLabel).toBe("Add Screenshot");
+    expect(createRecorderConfig({ mode: "screenshot" }).capture.audio).toBe(false);
+    expect(createRecorderConfig({ mode: "screen-microphone" }).ui.launchLabel).toBe("Add Screen Recording");
+    expect(createRecorderConfig().upload.fieldName).toBe("media");
+    expect(createRecorderConfig().completion.mode).toBe("return-to-host");
+    expect(createRecorderConfig().capture.autoStart).toBe(false);
+    expect(createRecorderConfig().capture.thumbnail).toMatchObject({ width: 1280, height: 1280 });
+    expect(createRecorderConfig({ capture: { autoStart: true } }).capture.autoStart).toBe(true);
   });
 
   it("prefers a portrait webcam constraint on a portrait viewport", () => {
@@ -77,7 +77,7 @@ describe("free configuration", () => {
       matchMedia: vi.fn(() => ({ matches: true }))
     });
 
-    expect(createFreeRecorderConfig({ mode: "video" }).capture.video).toMatchObject({
+    expect(createRecorderConfig({ mode: "video" }).capture.video).toMatchObject({
       width: { ideal: 360, max: 640 },
       height: { ideal: 640, max: 640 },
       aspectRatio: { ideal: 9 / 16 }
@@ -85,15 +85,15 @@ describe("free configuration", () => {
   });
 
   it("preserves a configured successful-upload redirect", () => {
-    const config = createFreeRecorderConfig({
+    const config = createRecorderConfig({
       completion: { mode: "redirect", redirectUrl: "/my-video-list/" }
     });
 
     expect(config.completion).toMatchObject({ mode: "redirect", redirectUrl: "/my-video-list/" });
   });
 
-  it("requests a bounded screen stream and caps Free screen recordings at one minute", () => {
-    const config = createFreeRecorderConfig({
+  it("retains the screen ceiling without changing constraints", () => {
+    const config = createRecorderConfig({
       mode: "screen",
       limits: { maxDurationSeconds: 300 }
     });
@@ -106,10 +106,32 @@ describe("free configuration", () => {
       }
     });
   });
+
+  it("retains a screen ceiling when the host omits limits", () => {
+    const config = createRecorderConfig({
+      mode: "screen",
+      limits: {}
+    });
+
+    expect(config.limits.maxDurationSeconds).toBe(60);
+  });
+});
+
+describe("Free contract regression", () => {
+  it("accepts stricter host limits while retaining one item", () => {
+    expect(createRecorderConfig({ limits: { maxDurationSeconds: 12, maxBytes: 2048, maxItems: 99 } }).limits).toEqual({ maxDurationSeconds: 12, maxBytes: 2048, maxItems: 1 });
+    expect(createRecorderConfig({ mode: "screen-microphone", limits: { maxDurationSeconds: 20 } }).limits.maxDurationSeconds).toBe(20);
+  });
+  it("invalid or missing values do not remove Free ceilings", () => {
+    for (const value of [undefined, 0, -1, Number.NaN, Number.POSITIVE_INFINITY]) {
+      expect(createRecorderConfig({ limits: { maxDurationSeconds: value, maxBytes: value } }).limits).toEqual({ maxDurationSeconds: 300, maxBytes: 100 * 1024 * 1024, maxItems: 1 });
+      expect(createRecorderConfig({ mode: "screen", limits: { maxDurationSeconds: value } }).limits.maxDurationSeconds).toBe(60);
+    }
+  });
 });
 
 describe("still image sizing", () => {
-  it("preserves the source aspect ratio within the Free 1280px maximum dimension", () => {
+  it("preserves the source aspect ratio within the configured 1280px maximum dimension", () => {
     expect(fitCaptureDimensions(1920, 1080, 1280, 1280)).toEqual({ width: 1280, height: 720 });
     expect(fitCaptureDimensions(1080, 1920, 1280, 1280)).toEqual({ width: 720, height: 1280 });
     expect(fitCaptureDimensions(1920, 1080, 640, 640)).toEqual({ width: 640, height: 360 });
@@ -128,6 +150,32 @@ describe("error normalization", () => {
   it("does not mistake native DOMException numeric code for recorder errors", () => {
     const error = normalizeError(new DOMException("Missing", "NotFoundError"));
     expect(error.code).toBe("device-unavailable");
+  });
+});
+
+describe("upload limits", () => {
+  it("blocks an over-limit draft before an upload begins and keeps it available for retry", async () => {
+    const upload = { upload: vi.fn() };
+    const recorder = new BrowserMediaRecorder(
+      createRecorderConfig({
+        mode: "video",
+        limits: { maxBytes: 4 },
+        upload: { enabled: true, endpoint: "/uploads", fieldName: "media" }
+      }),
+      upload
+    );
+    const internals = recorder as unknown as {
+      currentDraft: RecorderDraft;
+      state: "review";
+    };
+
+    internals.currentDraft = draft({ sizeBytes: 5 });
+    internals.state = "review";
+
+    await expect(recorder.accept()).rejects.toMatchObject({ code: "file-too-large" });
+    expect(upload.upload).not.toHaveBeenCalled();
+    expect(recorder.getState()).toBe("review");
+    expect(recorder.getDraft()).toMatchObject({ sizeBytes: 5 });
   });
 });
 
@@ -162,7 +210,7 @@ describe("capabilities and MIME negotiation", () => {
       }
     });
 
-    const recorder = new BrowserMediaRecorder(createFreeRecorderConfig({ mode: "video" }));
+    const recorder = new BrowserMediaRecorder(createRecorderConfig({ mode: "video" }));
     await recorder.open();
     await recorder.prepare();
 
@@ -204,7 +252,7 @@ describe("capabilities and MIME negotiation", () => {
       }
     });
 
-    const recorder = new BrowserMediaRecorder(createFreeRecorderConfig({ mode: "screen-microphone" }));
+    const recorder = new BrowserMediaRecorder(createRecorderConfig({ mode: "screen-microphone" }));
     await recorder.open();
     await recorder.prepare();
 
@@ -228,7 +276,7 @@ describe("capabilities and MIME negotiation", () => {
       }
     });
 
-    const recorder = new BrowserMediaRecorder(createFreeRecorderConfig({ mode: "video" }));
+    const recorder = new BrowserMediaRecorder(createRecorderConfig({ mode: "video" }));
     await expect(recorder.getInputDevices()).resolves.toEqual([
       { kind: "videoinput", deviceId: "front", label: "Front camera" },
       { kind: "videoinput", deviceId: "rear", label: "Rear camera" },
@@ -440,8 +488,8 @@ describe("multipart upload adapter", () => {
   });
 });
 
-describe("Pro upload boundary", () => {
-  it("keeps resumable tus uploads out of the Free build", async () => {
+describe("upload boundary", () => {
+  it("keeps resumable tus uploads out of this recorder package", async () => {
     await expect(new ResumableUploadAdapter().upload()).rejects.toThrow("not available in this recorder build");
   });
 });

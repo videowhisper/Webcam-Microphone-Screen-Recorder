@@ -1,0 +1,11 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/recorder-types" },
+    { "path": "packages/recorder-core" },
+    { "path": "packages/recorder-upload" },
+    { "path": "packages/recorder-ui" },
+    { "path": "packages/recorder-react" },
+    { "path": "packages/recorder-free" }
+  ]
+}

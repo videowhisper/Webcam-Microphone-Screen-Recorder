@@ -1,5 +1,3 @@
-export type RecorderEdition = "free" | "pro";
-
 export type RecorderMode =
   | "video"
   | "audio"
@@ -103,13 +101,15 @@ export interface RecorderPreviewAvailability {
 }
 
 export interface RecorderLimits {
-  maxDurationSeconds: number;
+  maxDurationSeconds?: number | undefined;
   maxItems: number;
   maxBytes?: number | undefined;
 }
 
 export interface RecorderUiConfig {
   launchLabel: string;
+  /** Optional integration-specific label shown in the recorder header. */
+  title?: string | undefined;
   mobileFullscreen: boolean;
   theme: "light" | "dark" | "auto";
   showLocalSave: boolean;
@@ -170,7 +170,6 @@ export interface RecorderConfig {
   target?: string | HTMLElement | undefined;
   mode: RecorderMode;
   renderMode: RecorderRenderMode;
-  edition: RecorderEdition;
   ui: RecorderUiConfig;
   limits: RecorderLimits;
   capture: RecorderCaptureConfig;

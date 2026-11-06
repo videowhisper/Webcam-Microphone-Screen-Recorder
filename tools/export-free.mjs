@@ -16,6 +16,7 @@ const allowlist = [
   "playwright.config.ts",
   "vitest.config.ts",
   "tsconfig.base.json",
+  "tsconfig.json",
   "README.md",
   "LICENSE",
   "LICENSES.md",
@@ -72,7 +73,7 @@ function shouldExport(source) {
   ) {
     return false;
   }
-  if (parts.some((part) => ["AGENTS.md", "CLAUDE.md", ".env", ".env.local", "attachments"].includes(part)) || source.endsWith(".tsbuildinfo") || source.endsWith(".map")) {
+  if (parts.some((part) => ["AGENTS.md", "CLAUDE.md", ".env", ".env.local", "attachments", ".DS_Store", "recorder-pro", "videowhisper-media-pro"].includes(part)) || source.endsWith(".tsbuildinfo") || source.endsWith(".map")) {
     return false;
   }
   if (parts[0] === "server" && parts[1] === "php-demo" && parts[2] === "config" && parts[3] === "credentials.php") {

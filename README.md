@@ -19,12 +19,13 @@
 
 The recorder requests practical browser capture settings. The browser, selected device, operating system, and permission choice ultimately determine the delivered media settings.
 
-- Webcam video requests a maximum 640px long edge at up to 30 fps (normally 640 × 360 landscape or 360 × 640 portrait) and records for up to five minutes.
-- Screen recording requests 1280 × 720 and records for up to one minute.
+- Webcam video requests a maximum 640px long edge at up to 30 fps (normally 640 × 360 landscape or 360 × 640 portrait).
+- Screen recording requests 1280 × 720.
 - Webcam photos and screenshots preserve aspect ratio within a 1280px long edge.
-- The recording durations help avoid large uploads and server or network timeouts in typical self-hosted installations.
+- Each Free capture accepts one item, up to 100 MiB and 300 seconds for webcam/audio or 60 seconds for screen modes. Captures can be repeated; there is no expiry, account activation or lifetime quota.
+- Site integrations can enforce stricter capture or upload constraints. Browser, server and provider limits still apply.
 
-The application is provided as is with its current implemented capabilities. A commercial VideoWhisper Pro release will expand on the available capabilities and configuration options.
+The application is provided as is with its current implemented capabilities.
 
 ## Quick deployment: PHP demo, no source build
 
@@ -45,7 +46,7 @@ The package detects its deployed base path automatically; its default upload end
 Requirements: Node.js 20+ and npm. PHP 8.2+ is additionally required for the included upload/admin demo.
 
 ```bash
-npm install
+npm ci
 npm run build
 npm run dev
 ```
@@ -74,6 +75,8 @@ The recorder is bundled by VideoWhisper's WordPress recorder plugins:
 - [Video Comments Webcam Recorder](https://wordpress.org/plugins/video-comments-webcam-recorder/)
 
 The plugins can save accepted media to the WordPress Media Library and expose recorder media information on the resulting attachment. Their integration options control which capture types are available in each workflow.
+
+The public source and export contain only the Free application. Installed extensions can select their own local application through the WordPress plugins’ documented versioned asset hook; this source has no premium unlock switch or bundled private implementation.
 
 For shortcode examples, supported events, and instructions for updating the bundled app in those plugins, read [WordPress integration](docs/wordpress-integration.md).
 

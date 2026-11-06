@@ -7,7 +7,7 @@ export const DEFAULT_CAPTURE_BOUNDS = {
   maxBytes: 100 * 1024 * 1024
 } as const;
 
-export function createFreeRecorderConfig(overrides: Partial<RecorderConfig> & { target?: string | HTMLElement; mode?: RecorderMode } = {}): RecorderConfig {
+export function createRecorderConfig(overrides: Partial<RecorderConfig> & { target?: string | HTMLElement; mode?: RecorderMode } = {}): RecorderConfig {
   const mode = overrides.mode ?? "video";
   const target = overrides.target;
   const capture: RecorderConfig["capture"] = {
@@ -32,8 +32,7 @@ export function createFreeRecorderConfig(overrides: Partial<RecorderConfig> & { 
   if (mode === "screen" || mode === "screen-microphone" || mode === "screenshot") {
     capture.screen = overrides.capture?.screen ?? {
       // Browsers retain final control of the chosen display source and may
-      // ignore these preferred values. The capture duration guard keeps a
-      // full-resolution capture bounded when that happens.
+      // ignore these preferred values.
       video: {
         width: { ideal: 1280, max: 1280 },
         height: { ideal: 720, max: 720 },
@@ -80,13 +79,17 @@ export function createFreeRecorderConfig(overrides: Partial<RecorderConfig> & { 
     completion.hiddenInputName = overrides.completion.hiddenInputName;
   }
 
+  const durationCeiling = mode === "screen" || mode === "screen-microphone" || mode === "screen-camera"
+    ? DEFAULT_CAPTURE_BOUNDS.maxScreenDurationSeconds
+    : DEFAULT_CAPTURE_BOUNDS.maxDurationSeconds;
+
   return {
     ...(target ? { target } : {}),
     mode,
     renderMode: overrides.renderMode ?? "button",
-    edition: "free",
     ui: {
       launchLabel: overrides.ui?.launchLabel ?? launchLabelForMode(mode),
+      ...(overrides.ui?.title ? { title: overrides.ui.title } : {}),
       mobileFullscreen: overrides.ui?.mobileFullscreen ?? true,
       theme: overrides.ui?.theme ?? "auto",
       showLocalSave: overrides.ui?.showLocalSave ?? false,
@@ -95,13 +98,9 @@ export function createFreeRecorderConfig(overrides: Partial<RecorderConfig> & { 
       ...(overrides.ui?.consentText ? { consentText: overrides.ui.consentText } : {})
     },
     limits: {
-      maxDurationSeconds: clamp(
-        overrides.limits?.maxDurationSeconds ?? (isScreenRecordingMode(mode) ? DEFAULT_CAPTURE_BOUNDS.maxScreenDurationSeconds : DEFAULT_CAPTURE_BOUNDS.maxDurationSeconds),
-		1,
-		isScreenRecordingMode(mode) ? DEFAULT_CAPTURE_BOUNDS.maxScreenDurationSeconds : DEFAULT_CAPTURE_BOUNDS.maxDurationSeconds
-      ),
-      maxItems: 1,
-		maxBytes: Math.min(overrides.limits?.maxBytes ?? DEFAULT_CAPTURE_BOUNDS.maxBytes, DEFAULT_CAPTURE_BOUNDS.maxBytes)
+      maxDurationSeconds: boundedLimit(overrides.limits?.maxDurationSeconds, durationCeiling),
+      maxItems: DEFAULT_CAPTURE_BOUNDS.maxItems,
+      maxBytes: boundedLimit(overrides.limits?.maxBytes, DEFAULT_CAPTURE_BOUNDS.maxBytes)
     },
     capture,
     upload,
@@ -135,10 +134,6 @@ function defaultWebcamVideoConstraints(): MediaTrackConstraints {
   };
 }
 
-function isScreenRecordingMode(mode: RecorderMode): boolean {
-  return mode === "screen" || mode === "screen-microphone" || mode === "screen-camera";
-}
-
 function launchLabelForMode(mode: RecorderMode): string {
   switch (mode) {
     case "audio":
@@ -157,4 +152,10 @@ function launchLabelForMode(mode: RecorderMode): string {
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max);
+}
+
+/** Preserve published Free ceilings while accepting stricter host limits. */
+function boundedLimit(value: number | undefined, ceiling: number): number {
+  const number = Number(value);
+  return Number.isFinite(number) && number > 0 ? clamp(Math.floor(number), 1, ceiling) : ceiling;
 }

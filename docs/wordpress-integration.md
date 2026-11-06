@@ -27,15 +27,39 @@ Accepted results include the upload URL or WordPress attachment information and 
 
 ## Update the bundled recorder assets
 
-From a checkout that contains this recorder and the two WordPress plugin folders:
+From the exact source revision named in the plugin's `recorder/build-manifest.json`:
 
 ```bash
-npm install
+npm ci
+npm run typecheck
+npm run test
 npm run build
-npm run sync:wp-recorder-assets
 ```
 
-The sync command copies the production browser JavaScript and CSS into each plugin's `trunk/recorder/` directory and removes development source maps from the distributed plugin assets. Review the resulting plugin changes, run each plugin's checks, and commit or publish the plugin updates independently of this recorder repository.
+Copy only `packages/recorder-vanilla/dist/videowhisper-recorder.browser.js` and `videowhisper-recorder.css` to the selected plugin's `recorder/` directory. Remove the JavaScript sourceMappingURL line and retain one final newline. Do not copy source maps, dependency directories, development servers or private app variants. Review and qualify each plugin independently before publishing it. The manifest records the exact source revision, build inputs and output checksums.
+
+### Installed local app extension
+
+The WordPress adapters own permissions, upload limits, media associations and accepted-result handling. Their versioned hook lets an installed extension supply its own local app, without adding private implementation or unlock flags to this Free source:
+
+```php
+add_filter('videowhisper_recorder_app_assets_v1', function ($assets, $context) {
+    if (1 !== ($context['schema'] ?? null)
+        || 'web-recorder' !== ($context['app'] ?? null)
+        || 1 !== ($context['config_contract'] ?? null)
+        || !in_array($context['plugin'] ?? '', array('video-posts-webcam-recorder', 'video-comments-webcam-recorder'), true)) {
+        return $assets;
+    }
+    // Return verified local script_url, style_url and version for your installed app.
+    // Keep the bundled assets when your local files are unavailable.
+    return $assets;
+}, 20, 2);
+add_action('videowhisper_recorder_app_enqueued_v1', function ($assets, $context) {
+    // Observe the final selected local assets. Never emit credentials or change permissions here.
+}, 10, 2);
+```
+
+The adapters validate the returned URLs and fall back to their bundled app if the descriptor is invalid. An alternative app must honor supplied host limits, site permissions, upload authorization and result contracts. This hook does not grant uploads, publish content or install/activate an extension.
 
 ## Plugin testing checklist
 

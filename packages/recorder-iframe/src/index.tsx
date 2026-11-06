@@ -1,7 +1,7 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
 import type { MediaResult, RecorderConfig } from "@videowhisper/recorder-types";
-import { createFreeRecorderConfig } from "@videowhisper/recorder-free";
+import { createRecorderConfig } from "@videowhisper/recorder-free";
 import { VideoWhisperRecorder } from "@videowhisper/recorder-react";
 import "@videowhisper/recorder-ui/styles.css";
 
@@ -27,7 +27,7 @@ export function bootIframe(target: HTMLElement, init: IframeInitMessage): void {
     return;
   }
 
-  const config = createFreeRecorderConfig({
+	const config = createRecorderConfig({
     ...init.config,
     target,
     renderMode: "page",

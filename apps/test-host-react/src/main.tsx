@@ -1,10 +1,10 @@
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { createFreeRecorderConfig } from "@videowhisper/recorder-free";
+import { createRecorderConfig } from "@videowhisper/recorder-free";
 import { VideoWhisperRecorder } from "@videowhisper/recorder-react";
 import "@videowhisper/recorder-ui/styles.css";
 
-const config = createFreeRecorderConfig({
+const config = createRecorderConfig({
   target: "#root",
   mode: "audio",
   renderMode: "inline",
