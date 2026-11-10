@@ -1,6 +1,6 @@
 {
   "name": "@videowhisper/recorder-react",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "GPL-2.0-or-later",
   "type": "module",
   "main": "dist/index.js",
@@ -15,10 +15,10 @@
     "build": "tsc -b"
   },
   "dependencies": {
-    "@videowhisper/recorder-core": "0.1.0",
-    "@videowhisper/recorder-types": "0.1.0",
-    "@videowhisper/recorder-ui": "0.1.0",
-    "@videowhisper/recorder-upload": "0.1.0"
+    "@videowhisper/recorder-core": "0.1.1",
+    "@videowhisper/recorder-types": "0.1.1",
+    "@videowhisper/recorder-ui": "0.1.1",
+    "@videowhisper/recorder-upload": "0.1.1"
   },
   "peerDependencies": {
     "react": ">=18",

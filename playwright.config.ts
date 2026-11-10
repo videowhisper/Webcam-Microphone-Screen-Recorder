@@ -14,6 +14,7 @@ export default defineConfig({
     video: "retain-on-failure",
     permissions: ["camera", "microphone"],
     launchOptions: {
+      executablePath: process.env.VWC_CHROMIUM_PATH,
       args: [
         "--use-fake-device-for-media-stream",
         "--use-fake-ui-for-media-stream",

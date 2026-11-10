@@ -1,18 +1,14 @@
 import { expect, test } from "@playwright/test";
 
-test("shows the session-positioned Free/Demo consultation badge", async ({ page }) => {
+test("opens a ready preview before recording starts", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("button", { name: /camera video/i }).click();
+  await expect(page.getByRole("button", { name: "Continue" })).toBeVisible();
+  await expect(page.getByLabel("Stop recording")).toHaveCount(0);
   await page.getByRole("button", { name: "Continue" }).click();
-
-  const badge = page.getByRole("link", { name: /free demo by videowhisper/i });
-  await expect(badge).toHaveAttribute("href", "https://consult.videowhisper.com");
-  await expect(badge).toHaveAttribute("target", "_blank");
-  await expect(badge).toHaveText(/^(Free|Demo)$/);
-  await expect(badge).toHaveCSS("position", "absolute");
-  const side = await badge.evaluate((element) => element.style.left || element.style.right);
-  expect(side).toBe("14px");
-  await expect(badge.locator("xpath=ancestor::div[contains(@class, 'vwr-preview')]")).toHaveCount(1);
+  await expect(page.getByLabel("Start recording")).toBeVisible();
+  await expect.poll(() => page.locator("video").evaluateAll(videos => videos.some(video => video.videoWidth > 0))).toBe(true);
+  await expect(page.getByLabel("Stop recording")).toHaveCount(0);
 });
 
 test("reopens a closed recorder dialog and restores a live preview", async ({ page }) => {
@@ -52,7 +48,7 @@ test("records a webcam clip with Chromium fake media", async ({ page }) => {
   await page.goto("/");
 
   await page.getByRole("button", { name: /camera video/i }).click();
-  await expect(page.getByText(/free limit: requests webcam video within a 640px long edge.*360 × 640 portrait.*5:00/i)).toBeVisible();
+  await expect(page.getByText(/Webcam capture requests a 640px long edge.*360 × 640 portrait/i)).toBeVisible();
   await page.getByRole("button", { name: "Continue" }).click();
 
   await expect(page.getByLabel("Start recording")).toBeVisible();
@@ -75,7 +71,7 @@ test("opens the screen recorder without a physical screen prompt", async ({ page
 
   await page.goto("/");
   await page.getByRole("button", { name: /screen recording/i }).click();
-  await expect(page.getByText(/free limit: requests up to 1280 × 720 screen video.*1:00/i)).toBeVisible();
+  await expect(page.getByText(/Screen capture requests up to 1280 × 720/i)).toBeVisible();
   await page.getByRole("button", { name: "Continue" }).click();
 
   await expect(page.locator(".vwr-recorder, .vwr-error")).toBeVisible();

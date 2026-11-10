@@ -1,6 +1,6 @@
 {
   "name": "@videowhisper/recorder-vanilla",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "GPL-2.0-or-later",
   "type": "module",
   "main": "dist/index.js",
@@ -15,10 +15,10 @@
     "build": "vite build --config vite.config.ts"
   },
   "dependencies": {
-    "@videowhisper/recorder-core": "0.1.0",
-    "@videowhisper/recorder-free": "0.1.0",
-    "@videowhisper/recorder-react": "0.1.0",
-    "@videowhisper/recorder-types": "0.1.0",
+    "@videowhisper/recorder-core": "0.1.1",
+    "@videowhisper/recorder-free": "0.1.1",
+    "@videowhisper/recorder-react": "0.1.1",
+    "@videowhisper/recorder-types": "0.1.1",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
