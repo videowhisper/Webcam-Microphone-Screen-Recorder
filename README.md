@@ -31,7 +31,7 @@ The application is provided as is with its current implemented capabilities.
 
 Download the ready-to-deploy package from the latest GitHub release:
 
-[Download the PHP demo ZIP](https://github.com/videowhisper/Webcam-Microphone-Screen-Recorder/releases/latest/download/videowhisper-webcam-microphone-screen-recorder-0.1.0.zip) · [View all releases](https://github.com/videowhisper/Webcam-Microphone-Screen-Recorder/releases)
+[Download the PHP demo ZIP](https://github.com/videowhisper/Webcam-Microphone-Screen-Recorder/releases/download/v0.1.1/videowhisper-webcam-microphone-screen-recorder-0.1.1.zip) · [View all releases](https://github.com/videowhisper/Webcam-Microphone-Screen-Recorder/releases)
 
 1. Extract its top-level folder into an HTTPS-enabled web directory, for example `<document-root>/webcam-microphone-screen-recorder/`.
 2. Use PHP 8.2+ with Apache, or configure your web server to route `api/*` to `api/index.php` and the browser app routes to `index.html`.
