@@ -117,6 +117,7 @@ final class App
             return ['deleted' => 0, 'skipped' => 'cleanup already running'];
         }
 
+        $protected = array_fill_keys($this->config['retention']['protected_ids'] ?? [], true);
         $deleted = 0;
         $maxAge = min((int) $this->config['retention']['max_age_days'], 365);
         $cutoff = gmdate('c', time() - ($maxAge * DAY_IN_SECONDS));
@@ -125,6 +126,7 @@ final class App
         $stmt = $this->db->prepare('SELECT id FROM media WHERE created_at < :cutoff OR created_at < :absolute_cutoff');
         $stmt->execute([':cutoff' => $cutoff, ':absolute_cutoff' => $absoluteCutoff]);
         foreach ($stmt->fetchAll(PDO::FETCH_COLUMN) as $id) {
+            if (isset($protected[(string) $id])) continue;
             $this->deleteMedia((string) $id);
             $deleted++;
         }
@@ -132,7 +134,7 @@ final class App
         foreach ($this->config['uploads']['allowed_types'] as $type) {
             $stmt = $this->db->prepare('SELECT id FROM media WHERE type = :type ORDER BY created_at DESC');
             $stmt->execute([':type' => $type]);
-            $ids = $stmt->fetchAll(PDO::FETCH_COLUMN);
+            $ids = array_values(array_filter($stmt->fetchAll(PDO::FETCH_COLUMN), static fn($id) => !isset($protected[(string) $id])));
             $keep = (int) $this->config['retention']['max_items_per_type'];
             foreach (array_slice($ids, $keep) as $id) {
                 $this->deleteMedia((string) $id);
@@ -396,6 +398,7 @@ final class App
         if (hash_equals((string) $this->config['admin']['username'], $username) && hash_equals((string) $this->config['admin']['password'], $password)) {
             session_regenerate_id(true);
             $_SESSION['vwr_admin'] = true;
+            $_SESSION['vwr_admin_proof'] = hash_hmac('sha256', $username . chr(0) . $password, (string) $this->config['security']['hmac_secret']);
             $this->redirect('/admin/media');
             return;
         }
@@ -643,7 +646,8 @@ PHP;
 
     private function isAdmin(): bool
     {
-        return !empty($_SESSION['vwr_admin']);
+        $expected = hash_hmac('sha256', $this->config['admin']['username'] . chr(0) . $this->config['admin']['password'], (string) $this->config['security']['hmac_secret']);
+        return !empty($_SESSION['vwr_admin']) && is_string($_SESSION['vwr_admin_proof'] ?? null) && hash_equals($expected, $_SESSION['vwr_admin_proof']);
     }
 
     private function checkUploadLimit(): void

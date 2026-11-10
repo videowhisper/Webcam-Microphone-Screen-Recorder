@@ -37,11 +37,28 @@ The protected media admin page includes a collapsed credential-settings section
 below the media list. Its brief title warns when defaults remain active and
 opens the setup instructions when clicked. Changing the HMAC secret invalidates
 existing anonymous owner cookies, so keep it stable after deployment.
+Administrator sessions are also bound to the current credentials and HMAC;
+rotating either requires administrators to log in again.
 
 ## Cleanup Cron
 
 ```cron
 17 * * * * /usr/bin/php /path/to/server/php-demo/bin/cleanup.php >/dev/null 2>&1
+```
+
+Before enabling cleanup on an existing installation, back up its database and
+media. A deployment configuration can supply `retention.protected_ids` as an
+array of existing media IDs. Those IDs are excluded from both age limits
+(including the absolute limit) and per-type count cleanup. Keep that ledger
+outside the public document root and fail closed if it cannot be loaded.
+Set `cleanup.run_probability` to `0` when cleanup should run only through the
+scheduled CLI command or an administrator. Protection applies to automated
+retention; an administrator can still deliberately delete an item.
+
+Run the isolated backend regression check from the source workspace:
+
+```bash
+php tests/php-backend-security.php
 ```
 
 The demo stores media in `storage/media`, thumbnails in `storage/thumbnails`,
